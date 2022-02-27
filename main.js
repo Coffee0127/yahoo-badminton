@@ -77,6 +77,63 @@ function init () {
   box.font = '26px Arial'
   box.fillStyle = 'black'
   box.fillText('順時針依序插拍', origin, origin)
+
+  // Initial pointer
+  callNextPlayers(false)
 }
 
 window.addEventListener('load', init)
+
+const initPointerPositionX = 110
+const initPointerPositionY = 210
+const pointerPositions = [
+  { x: initPointerPositionX, y: initPointerPositionY },
+  { x: initPointerPositionX + gridElementSize, y: initPointerPositionY },
+  { x: initPointerPositionX + 2 * gridElementSize, y: initPointerPositionY },
+  { x: initPointerPositionX + 2 * gridElementSize, y: initPointerPositionY + gridElementSize },
+  { x: initPointerPositionX + 2 * gridElementSize, y: initPointerPositionY + 2 * gridElementSize },
+  { x: initPointerPositionX + gridElementSize, y: initPointerPositionY + 2 * gridElementSize },
+  { x: initPointerPositionX, y: initPointerPositionY + 2 * gridElementSize },
+  { x: initPointerPositionX, y: initPointerPositionY + gridElementSize }
+]
+let pointerIndex = pointerPositions.length - 1
+
+function callNextPlayers (isAnimate = true) {
+  callNextBtn.disabled = true
+  let fromX = pointerPositions[pointerIndex].x
+  let fromY = pointerPositions[pointerIndex].y
+  pointerIndex = ++pointerIndex % pointerPositions.length
+  const toX = pointerPositions[pointerIndex].x
+  const toY = pointerPositions[pointerIndex].y
+  const animationSpeed = isAnimate && 60 || 1
+  const stepX = (toX - fromX) / animationSpeed
+  const stepY = (toY - fromY) / animationSpeed
+
+  const pointerSize = 80
+  const pointer = document.querySelector('#pointer')
+  if (isAnimate) {
+    window.requestAnimationFrame(animate)
+    callNextBtn.innerHTML = '球員上場中...'
+
+    function animate () {
+      if (fromX !== toX || fromY !== toY) {
+        box.clearRect(fromX, fromY, pointerSize, pointerSize)
+        drawRulers()
+        const newX = fromX + stepX
+        const newY = fromY + stepY
+        box.drawImage(pointer, newX, newY, pointerSize, pointerSize)
+        fromX = newX
+        fromY = newY
+        requestAnimationFrame(animate)
+      } else {
+        callNextBtn.disabled = false
+        callNextBtn.innerHTML = '下一組上場'
+      }
+    }
+  } else {
+    box.drawImage(pointer, toX, toY, pointerSize, pointerSize)
+  }
+}
+
+const callNextBtn = document.querySelector('#call-next-btn')
+callNextBtn.addEventListener('click', callNextPlayers)

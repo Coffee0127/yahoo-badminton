@@ -1,3 +1,8 @@
 #box {
   background: #e7d8b3;
 }
+
+#pointer {
+  width: 40px;
+  height: 40px;
+}
