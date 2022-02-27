@@ -7,6 +7,7 @@
   height: 40px;
 }
 
+#call-next-result,
 #add-player-result {
   color: #d53227;
   display: none;

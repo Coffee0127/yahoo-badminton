@@ -98,28 +98,59 @@ const pointerPositions = [
   { x: initPointerPositionX, y: initPointerPositionY + 2 * gridElementSize },
   { x: initPointerPositionX, y: initPointerPositionY + gridElementSize }
 ]
-let pointerIndex = pointerPositions.length - 1
+let pointerIndex = 0
 
 function callNextPlayers (isAnimate = true) {
   callNextBtn.disabled = true
-  let fromX = pointerPositions[pointerIndex].x
-  let fromY = pointerPositions[pointerIndex].y
-  pointerIndex = ++pointerIndex % pointerPositions.length
-  const toX = pointerPositions[pointerIndex].x
-  const toY = pointerPositions[pointerIndex].y
+  const fromPointerIndex = pointerIndex
+  let fromX = pointerPositions[fromPointerIndex].x
+  let fromY = pointerPositions[fromPointerIndex].y
+  const toPointerIndex = (fromPointerIndex + 1) % pointerPositions.length
+  const toX = pointerPositions[toPointerIndex].x
+  const toY = pointerPositions[toPointerIndex].y
   const animationSpeed = isAnimate && 60 || 1
   const stepX = (toX - fromX) / animationSpeed
   const stepY = (toY - fromY) / animationSpeed
 
   const pointerSize = 80
   const pointer = document.querySelector('#pointer')
+
+  function clearPlayers (index) {
+    const fromPlayerPosition = playerPositions[index]
+    box.clearRect(
+      fromPlayerPosition.x,
+      fromPlayerPosition.y - playerNameFontSize,
+      gridElementSize - initPlayersPositionX - 2,
+      playerMarginY + 2 * playerNameFontSize)
+  }
+
   if (isAnimate) {
-    window.requestAnimationFrame(animate)
-    callNextBtn.innerHTML = '球員上場中...'
+    clearPlayers(fromPointerIndex)
+    playerNames.push(...((queuedPlayers[fromPointerIndex])))
+    showPlayerPools()
+    delete queuedPlayers[fromPointerIndex]
+    addPlayerBtn.disabled = false
+    addPlayerResult.style.display = 'none'
+
+    if (queuedPlayers[toPointerIndex]) {
+      pointerIndex = ++pointerIndex % pointerPositions.length
+      window.requestAnimationFrame(animate)
+      callNextBtn.innerHTML = '球員上場中...'
+    } else {
+      // No players in the queue
+      playerPositionIndex--
+      if (playerPositionIndex < 0) {
+        playerPositionIndex += 8
+      }
+      callNextBtn.disabled = true
+      callNextResult.style.display = 'inline'
+    }
 
     function animate () {
       if (fromX !== toX || fromY !== toY) {
         box.clearRect(fromX, fromY, pointerSize, pointerSize)
+        clearPlayers(toPointerIndex)
+        drawPlayers(toPointerIndex, queuedPlayers[toPointerIndex])
         drawRulers()
         const newX = fromX + stepX
         const newY = fromY + stepY
@@ -133,11 +164,12 @@ function callNextPlayers (isAnimate = true) {
       }
     }
   } else {
-    box.drawImage(pointer, toX, toY, pointerSize, pointerSize)
+    box.drawImage(pointer, fromX, fromY, pointerSize, pointerSize)
   }
 }
 
-const callNextBtn = document.querySelector('#call-next-btn')
+const callNextBtn = document.querySelector('#call-next-btn'),
+  callNextResult = document.querySelector('#call-next-result')
 callNextBtn.addEventListener('click', callNextPlayers)
 
 const playerNames = [
@@ -164,7 +196,7 @@ function showPlayerPools () {
   }
 }
 
-const initPlayersPositionX = 45
+const initPlayersPositionX = 30
 const initPlayersPositionY = 70
 let playerPositionIndex = 0
 const playerPositions = [
@@ -177,31 +209,37 @@ const playerPositions = [
   { x: initPlayersPositionX, y: initPlayersPositionY + 2 * gridElementSize },
   { x: initPlayersPositionX, y: initPlayersPositionY + gridElementSize }
 ]
-const playerMarginX = 130
+const playerMarginX = 135
 const playerMarginY = 80
-const players = {}
+const playerNameFontSize = 14
+const queuedPlayers = {}
+
+function drawPlayers (playerPositionIndex, players) {
+  const playerPosition = playerPositions[playerPositionIndex]
+  let playerIndex = 0
+  box.fillText(players[playerIndex++], playerPosition.x, playerPosition.y)
+  box.fillText(players[playerIndex++], playerPosition.x + playerMarginX, playerPosition.y)
+  box.fillText(players[playerIndex++], playerPosition.x, playerPosition.y + playerMarginY)
+  box.fillText(players[playerIndex++], playerPosition.x + playerMarginX, playerPosition.y + playerMarginY)
+}
 
 addPlayerBtn.addEventListener('click', () => {
   box.beginPath()
   box.textAlign = 'left'
   box.textBaseline = 'middle'
-  box.font = '13px Arial'
+  box.font = `${playerNameFontSize}px Arial`
   box.fillStyle = 'black'
-  const playerPosition = playerPositions[playerPositionIndex]
-  const queuedPlayers = [playerNames.shift(), playerNames.shift(), playerNames.shift(), playerNames.shift()]
-  players[playerPositionIndex] = queuedPlayers
-  let playerIndex = 0
-  box.fillText(queuedPlayers[playerIndex++], playerPosition.x, playerPosition.y)
-  box.fillText(queuedPlayers[playerIndex++], playerPosition.x + playerMarginX, playerPosition.y)
-  box.fillText(queuedPlayers[playerIndex++], playerPosition.x, playerPosition.y + playerMarginY)
-  box.fillText(queuedPlayers[playerIndex++], playerPosition.x + playerMarginX, playerPosition.y + playerMarginY)
+  const players = [playerNames.shift(), playerNames.shift(), playerNames.shift(), playerNames.shift()]
+  queuedPlayers[playerPositionIndex] = players
+  drawPlayers(playerPositionIndex, players)
   playerPositionIndex = ++playerPositionIndex % playerPositions.length
   showPlayerPools()
-  if (players.length === playerPositions.length) {
+  if (Object.keys(queuedPlayers).length === playerPositions.length) {
     addPlayerResult.style.display = 'inline'
     addPlayerBtn.disabled = true
   } else {
     addPlayerResult.style.display = 'none'
     callNextBtn.disabled = false
+    callNextResult.style.display = 'none'
   }
 })
