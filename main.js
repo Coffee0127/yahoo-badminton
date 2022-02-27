@@ -80,6 +80,8 @@ function init () {
 
   // Initial pointer
   callNextPlayers(false)
+
+  showPlayerPools()
 }
 
 window.addEventListener('load', init)
@@ -137,3 +139,69 @@ function callNextPlayers (isAnimate = true) {
 
 const callNextBtn = document.querySelector('#call-next-btn')
 callNextBtn.addEventListener('click', callNextPlayers)
+
+const playerNames = [
+  'Brandi Grey', 'Sohail Craft', 'Abbey Stacey', 'Benjamin Justice',
+  'Alberto Matthews', 'Adelle Butler', 'Fraser Spooner', 'Haley Kay',
+  'Nylah Simons', 'Shanae Chambers', 'Umer Malone', 'Caius Cano',
+  'Tobi Maynard', 'Humphrey Morgan', 'Hadassah Horton', 'Isla-Rae Hickman',
+  'Suzanne Rasmus', 'Kelsie Stubbs', 'Nile Bourne', 'Sade Mcintosh',
+  'Phoebe Ward', 'Stefanie Banks', 'Junior Franks', 'Viktoria Lord',
+  'Zachery Findlay', 'Presley Barnes', 'Kieron Pierce', 'Aleah Bray',
+  'Kobe Crawford', 'Aniqa Figueroa', 'Rhianna Hagan', 'Elin Barclay',
+  'Wilf Olsen', 'Mark Woods', 'Tulisa Ray', 'Leticia Golden'
+]
+const playerPools = document.querySelector('#player-pools'),
+  addPlayerBtn = document.querySelector('#add-player-btn'),
+  addPlayerResult = document.querySelector('#add-player-result')
+
+function showPlayerPools () {
+  playerPools.innerHTML = ''
+  for (const playerName of playerNames) {
+    const player = document.createElement('li')
+    player.innerHTML = playerName
+    playerPools.appendChild(player)
+  }
+}
+
+const initPlayersPositionX = 45
+const initPlayersPositionY = 70
+let playerPositionIndex = 0
+const playerPositions = [
+  { x: initPlayersPositionX, y: initPlayersPositionY },
+  { x: initPlayersPositionX + gridElementSize, y: initPlayersPositionY },
+  { x: initPlayersPositionX + 2 * gridElementSize, y: initPlayersPositionY },
+  { x: initPlayersPositionX + 2 * gridElementSize, y: initPlayersPositionY + gridElementSize },
+  { x: initPlayersPositionX + 2 * gridElementSize, y: initPlayersPositionY + 2 * gridElementSize },
+  { x: initPlayersPositionX + gridElementSize, y: initPlayersPositionY + 2 * gridElementSize },
+  { x: initPlayersPositionX, y: initPlayersPositionY + 2 * gridElementSize },
+  { x: initPlayersPositionX, y: initPlayersPositionY + gridElementSize }
+]
+const playerMarginX = 130
+const playerMarginY = 80
+const players = {}
+
+addPlayerBtn.addEventListener('click', () => {
+  box.beginPath()
+  box.textAlign = 'left'
+  box.textBaseline = 'middle'
+  box.font = '13px Arial'
+  box.fillStyle = 'black'
+  const playerPosition = playerPositions[playerPositionIndex]
+  const queuedPlayers = [playerNames.shift(), playerNames.shift(), playerNames.shift(), playerNames.shift()]
+  players[playerPositionIndex] = queuedPlayers
+  let playerIndex = 0
+  box.fillText(queuedPlayers[playerIndex++], playerPosition.x, playerPosition.y)
+  box.fillText(queuedPlayers[playerIndex++], playerPosition.x + playerMarginX, playerPosition.y)
+  box.fillText(queuedPlayers[playerIndex++], playerPosition.x, playerPosition.y + playerMarginY)
+  box.fillText(queuedPlayers[playerIndex++], playerPosition.x + playerMarginX, playerPosition.y + playerMarginY)
+  playerPositionIndex = ++playerPositionIndex % playerPositions.length
+  showPlayerPools()
+  if (players.length === playerPositions.length) {
+    addPlayerResult.style.display = 'inline'
+    addPlayerBtn.disabled = true
+  } else {
+    addPlayerResult.style.display = 'none'
+    callNextBtn.disabled = false
+  }
+})

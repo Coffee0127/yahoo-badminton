@@ -6,3 +6,9 @@
   width: 40px;
   height: 40px;
 }
+
+#add-player-result {
+  color: #d53227;
+  display: none;
+  padding-left: 5px;
+}
