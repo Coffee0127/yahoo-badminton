@@ -101,7 +101,7 @@ const pointerPositions = [
 let pointerIndex = 0
 
 function callNextPlayers (isAnimate = true) {
-  callNextBtn.disabled = true
+  disable(callNextBtn)
   const fromPointerIndex = pointerIndex
   let fromX = pointerPositions[fromPointerIndex].x
   let fromY = pointerPositions[fromPointerIndex].y
@@ -129,21 +129,21 @@ function callNextPlayers (isAnimate = true) {
     playerNames.push(...((queuedPlayers[fromPointerIndex])))
     showPlayerPools()
     delete queuedPlayers[fromPointerIndex]
-    addPlayerBtn.disabled = false
-    addPlayerResult.style.display = 'none'
+    enable(addPlayerBtn)
+    hide(addPlayerResult)
 
     if (queuedPlayers[toPointerIndex]) {
       pointerIndex = ++pointerIndex % pointerPositions.length
       window.requestAnimationFrame(animate)
-      callNextBtn.innerHTML = '球員上場中...'
+      text(callNextBtn, '球員上場中...')
     } else {
       // No players in the queue
       playerPositionIndex--
       if (playerPositionIndex < 0) {
         playerPositionIndex += 8
       }
-      callNextBtn.disabled = true
-      callNextResult.style.display = 'inline'
+      disable(callNextBtn)
+      show(callNextResult)
     }
 
     function animate () {
@@ -159,12 +159,13 @@ function callNextPlayers (isAnimate = true) {
         fromY = newY
         requestAnimationFrame(animate)
       } else {
-        callNextBtn.disabled = false
-        callNextBtn.innerHTML = '下一組上場'
+        enable(callNextBtn)
+        text(callNextBtn, '下一組上場')
       }
     }
   } else {
     box.drawImage(pointer, fromX, fromY, pointerSize, pointerSize)
+    show(callNextResult)
   }
 }
 
@@ -188,11 +189,11 @@ const playerPools = document.querySelector('#player-pools'),
   addPlayerResult = document.querySelector('#add-player-result')
 
 function showPlayerPools () {
-  playerPools.innerHTML = ''
+  empty(playerPools)
   for (const playerName of playerNames) {
     const player = document.createElement('li')
-    player.innerHTML = playerName
-    player.className = 'list-group-item'
+    text(player, playerName)
+    addClass(player,'list-group-item')
     playerPools.appendChild(player)
   }
 }
@@ -236,11 +237,11 @@ addPlayerBtn.addEventListener('click', () => {
   playerPositionIndex = ++playerPositionIndex % playerPositions.length
   showPlayerPools()
   if (Object.keys(queuedPlayers).length === playerPositions.length) {
-    addPlayerResult.style.display = 'inline'
-    addPlayerBtn.disabled = true
+    show(addPlayerResult)
+    disable(addPlayerBtn)
   } else {
-    addPlayerResult.style.display = 'none'
-    callNextBtn.disabled = false
-    callNextResult.style.display = 'none'
+    hide(addPlayerResult)
+    enable(callNextBtn)
+    hide(callNextResult)
   }
 })

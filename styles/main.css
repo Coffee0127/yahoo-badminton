@@ -19,6 +19,5 @@ main > .container {
 #call-next-result,
 #add-player-result {
   color: #dc3545;
-  display: none;
   padding-left: 5px;
 }
