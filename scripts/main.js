@@ -192,6 +192,7 @@ function showPlayerPools () {
   for (const playerName of playerNames) {
     const player = document.createElement('li')
     player.innerHTML = playerName
+    player.className = 'list-group-item'
     playerPools.appendChild(player)
   }
 }
